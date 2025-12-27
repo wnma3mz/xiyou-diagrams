@@ -60,19 +60,25 @@ const MermaidDiagram = React.memo(({ chart, id }) => {
         <div className="diagram-wrapper">
             <TransformWrapper
                 initialScale={1}
-                minScale={0.5}
+                minScale={0.2}
                 maxScale={4}
                 centerOnInit={true}
+                limitToBounds={false}
             >
-                {({ zoomIn, zoomOut, resetTransform }) => (
+                {({ zoomIn, zoomOut, resetTransform, centerView }) => (
                     <>
                         <div className="diagram-controls">
                             <button onClick={() => zoomIn()} className="control-btn" title="放大"><ZoomIn size={16} /></button>
                             <button onClick={() => zoomOut()} className="control-btn" title="缩小"><ZoomOut size={16} /></button>
                             <button onClick={() => resetTransform()} className="control-btn" title="重置"><RefreshCw size={16} /></button>
+                            <button onClick={() => centerView()} className="control-btn" title="居中"><Maximize2 size={16} /></button>
                         </div>
-                        <TransformComponent wrapperStyle={{ width: '100%', height: 'auto', maxHeight: '70vh', cursor: 'grab' }}>
-                            <div ref={ref} className="mermaid-container" style={{ padding: '2rem' }} />
+                        <TransformComponent wrapperStyle={{ width: '100%', height: 'auto', minHeight: '400px', maxHeight: '85vh', cursor: 'grab' }}>
+                            <div
+                                ref={ref}
+                                className="mermaid-container"
+                                style={{ padding: '3rem', minWidth: '100%' }}
+                            />
                         </TransformComponent>
                     </>
                 )}
@@ -122,6 +128,13 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }, [])
 
+    const handleShare = () => {
+        const url = window.location.href
+        navigator.clipboard.writeText(url).then(() => {
+            alert('项目链接已复制到剪贴板！')
+        })
+    }
+
     return (
         <div className="app-layout">
             {/* Top Navigation */}
@@ -137,7 +150,7 @@ export default function App() {
                     <h2 style={{ fontSize: '1.25rem', margin: 0 }}>西游图谱</h2>
                 </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-                    <button className="icon-btn" title="Share"><Share2 size={18} /></button>
+                    <button className="icon-btn" title="Share" onClick={handleShare}><Share2 size={18} /></button>
                 </div>
             </header>
 
@@ -198,15 +211,17 @@ export default function App() {
                             </header>
 
                             <div className="v-stack gap-8">
-                                {activeChapter.mermaid_diagrams.map((chart, i) => (
-                                    <section key={i} className="diagram-card">
-                                        <h3 className="card-title">
-                                            <BookOpen size={20} />
-                                            {i === 0 ? '架构图谱' : '流程解析'}
-                                        </h3>
-                                        <MermaidDiagram chart={chart} id={`ch-${activeChapter.chapter_num}-d-${i}`} />
-                                    </section>
-                                ))}
+                                <div className="diagrams-grid">
+                                    {activeChapter.mermaid_diagrams.map((chart, i) => (
+                                        <section key={i} className="diagram-card">
+                                            <h3 className="card-title">
+                                                <BookOpen size={20} />
+                                                {i === 0 ? '架构图谱' : '流程解析'}
+                                            </h3>
+                                            <MermaidDiagram chart={chart} id={`ch-${activeChapter.chapter_num}-d-${i}`} />
+                                        </section>
+                                    ))}
+                                </div>
 
                                 {activeChapter.interest_table && (
                                     <section className="diagram-card">
